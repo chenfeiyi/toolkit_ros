@@ -1,6 +1,6 @@
 /*
  * @Author: CHEN Feiyi
- * @LastEditTime: 2021-04-11 21:48:40
+ * @LastEditTime: 2021-04-12 21:37:43
  * @Description: content
  */
 #include <assert.h>
@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
 
   cmdline::parser a;
   a.add<bool>("loop", 'l', "play data repeatly", false, false);
+  a.add<int>("hz", 'z', "frequency to paly the data", false, 10);
   a.parse_check(argc, argv);
 
   ros::Publisher img_pub =
@@ -47,7 +48,7 @@ int main(int argc, char *argv[]) {
   sort(pcd_file_list.begin(), pcd_file_list.end());
 
   assert(img_file_list.size() == pcd_file_list.size());
-  ros::Rate rate(10);
+  ros::Rate rate(a.get<int>("hz"));
   sensor_msgs::ImagePtr img_msg;
   sensor_msgs::PointCloud2 pcd_msg;
   std::cout << "******************************" << std::endl;
