@@ -16,17 +16,16 @@ catkin_package(
 #  CATKIN_DEPENDS cv_bridge image_transport pcl_ros roscpp sensor_msgs
 #  DEPENDS system_lib
 )
-
+find_package( Sophus REQUIRED )
+find_package( OpenCV REQUIRED )
+find_package( apriltag REQUIRED )
 include_directories(
   include
   ./common
   ${catkin_INCLUDE_DIRS}
+  ${Sophus_INCLUDE_DIRS}
+  /usr/local/include/apriltag/
 )
+add_subdirectory(lib)
 
-add_executable(data_player lib/data_player.cc)
-
-## Specify libraries to link a library or executable target against
-target_link_libraries(data_player
-  ${catkin_LIBRARIES}
-)
 

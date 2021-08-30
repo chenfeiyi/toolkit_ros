@@ -1,6 +1,6 @@
 /*
  * @Author: CHEN Feiyi
- * @LastEditTime: 2021-04-13 19:41:51
+ * @LastEditTime: 2021-04-14 17:19:14
  * @Description: content
  */
 #include <assert.h>
@@ -20,7 +20,7 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-  ros::init(argc, argv, "data_player");
+  ros::init(argc, argv, "img_player");
   ros::NodeHandle nh;
 
   cmdline::parser a;
@@ -30,59 +30,30 @@ int main(int argc, char *argv[]) {
 
   ros::Publisher img_pub =
       nh.advertise<sensor_msgs::Image>("/usb_cam/image_raw", 10);
-  ros::Publisher pcd_pub =
-      nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points", 10);
   std::string img_file_path =
-      "/home/ramlab/Documents/CornerSeg/dataset/targetless_calibration/img/";
-  std::string pcd_file_path =
-      "/home/ramlab/Documents/CornerSeg/dataset/targetless_calibration/pcd/";
+      "/media/ramlab/hdd1/bags/targetless/targetless1/img/";
 
   vector<string> img_file_list;
   vector<string> pcd_file_list;
   calibrator_pipeline::common::GetFilelist(img_file_path, &img_file_list,
                                            false);
-  calibrator_pipeline::common::GetFilelist(pcd_file_path, &pcd_file_list,
-                                           false);
-
   sort(img_file_list.begin(), img_file_list.end());
-  sort(pcd_file_list.begin(), pcd_file_list.end());
 
-  assert(img_file_list.size() == pcd_file_list.size());
   ros::Rate rate(a.get<float>("hz"));
   sensor_msgs::ImagePtr img_msg;
-  sensor_msgs::PointCloud2 pcd_msg;
   std::cout << "******************************" << std::endl;
   std::cout << "start to play data" << std::endl;
   int i = 0;
   while (ros::ok()) {
       std::string img_name = img_file_path + img_file_list[i];
-      std::string pcd_name = pcd_file_path + pcd_file_list[i];
       cv::Mat img = cv::imread(img_name);
-      pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_raw(
-          new pcl::PointCloud<pcl::PointXYZI>);
-      pcl::io::loadPCDFile(pcd_name, *cloud_raw);
-
-      pcl::toROSMsg(*cloud_raw, pcd_msg);
-
       std::vector<std::string> img_field;
-      std::vector<std::string> pcd_field;
       calibrator_pipeline::common::SplitString(img_file_list[i],&img_field,'.');
-      calibrator_pipeline::common::SplitString(pcd_file_list[i],&pcd_field,'.');
-      if (pcd_field.size() != 3 || img_field.size() != 3) {
-        std::cout << "Wrong file name1: " << img_file_list[i] << std::endl;
-        std::cout << "Wrong file name2: " << pcd_file_list[i] << std::endl;
-        continue;
-      }
-
-      pcd_msg.header.frame_id = "velodyne";
-      pcd_msg.header.stamp =
-          ros::Time(std::atof((pcd_field[0] + '.' + pcd_field[1]).c_str()));
       img_msg =
           cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-      img_msg->header.stamp =
+      img_msg->header.stamp = //ros::Time::now();
           ros::Time(std::atof((img_field[0] + '.' + img_field[1]).c_str()));
       img_pub.publish(img_msg);
-      pcd_pub.publish(pcd_msg);
       rate.sleep();
       i++;
       i = i % img_file_list.size();
