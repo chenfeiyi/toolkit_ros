@@ -22,6 +22,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
 #include <vector>
+#include <thread>
 
 #include "ros/ros.h"
 
@@ -35,14 +36,11 @@ string img_topic = "/usb_cam/image_raw";
 string pcd_topic = "/velodyne_points";
 
 bool need_sync = false;
+bool save_data_flag = false;
 
 void Syncallback(const PointCloud2ConstPtr& ori_pointcloud,
                  const ImageConstPtr& ori_image) {
-  std::cout << "\033[1;32m Syn! \033[0m" << std::endl;
-  std::cout << "syn pointcloud' timestamp : " << ori_pointcloud->header.stamp
-            << std::endl;
-  std::cout << "syn image's timestamp : " << ori_image->header.stamp
-            << std::endl;
+
 
   pcl::PointCloud<pcl::PointXYZI> pcl_cloud;
   cv_bridge::CvImagePtr cv_image_ptr;
@@ -54,13 +52,21 @@ void Syncallback(const PointCloud2ConstPtr& ori_pointcloud,
   std::vector<int> compression_params;
   compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);  //  选择jpeg
   compression_params.push_back(100);  //  在这个填入你要的图片质量
-  cv::imwrite(img_save_path + "/" +
-                  std::to_string(ori_image->header.stamp.toSec()) + ".jpg",
-              cv_image, compression_params);
-  pcl::io::savePCDFile(
-      pcd_save_path + "/" +
-          std::to_string(ori_pointcloud->header.stamp.toSec()) + ".pcd",
-      pcl_cloud);
+  if (save_data_flag) {
+    save_data_flag = false;
+    std::cout << "\033[1;32m Syn! \033[0m" << std::endl;
+    std::cout << "syn pointcloud' timestamp : " << ori_pointcloud->header.stamp
+            << std::endl;
+    std::cout << "syn image's timestamp : " << ori_image->header.stamp
+            << std::endl;
+    cv::imwrite(img_save_path + "/" +
+                    std::to_string(ori_image->header.stamp.toSec()) + ".jpg",
+                cv_image, compression_params);
+    pcl::io::savePCDFile(
+        pcd_save_path + "/" +
+            std::to_string(ori_pointcloud->header.stamp.toSec()) + ".pcd",
+        pcl_cloud);
+  }
 }
 
 void Lidarcallback(sensor_msgs::PointCloud2ConstPtr msg) {
@@ -69,8 +75,11 @@ void Lidarcallback(sensor_msgs::PointCloud2ConstPtr msg) {
   std::string file_name;
   file_name =
       pcd_save_path + std::to_string(msg->header.stamp.toSec()) + ".pcd";
-  pcl::io::savePCDFile(file_name, cloud_in);
-  ROS_INFO("save pcd file!");
+  if (save_data_flag) {
+    save_data_flag = false;
+    pcl::io::savePCDFile(file_name, cloud_in);
+    ROS_INFO("save pcd file!");
+  }
 }
 
 void Imgcallback(sensor_msgs::ImageConstPtr msg) {
@@ -84,8 +93,17 @@ void Imgcallback(sensor_msgs::ImageConstPtr msg) {
   std::vector<int> compression_params;
   compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);  // 选择jpeg
   compression_params.push_back(100);  // 在这个填入你要的图片质量
-  cv::imwrite(file_name, cv_image, compression_params);
-  ROS_INFO("save img file!");
+  if (save_data_flag) {
+    save_data_flag = false;
+    cv::imwrite(file_name, cv_image, compression_params);
+    ROS_INFO("save img file!");
+  }
+}
+
+void keyaction() {
+  cout << "Press any key to save data..." << endl;
+  getchar();
+  save_data_flag = true;
 }
 
 int main(int argc, char** argv) {
@@ -112,6 +130,8 @@ int main(int argc, char** argv) {
     ros::Subscriber img_sub =
         nh.subscribe<sensor_msgs::Image>(img_topic, 10, Imgcallback);
   }
+
+  thread t(keyaction);
   ros::spin();
   return 0;
 }
