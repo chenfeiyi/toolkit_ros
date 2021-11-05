@@ -84,3 +84,4 @@ static void ReadTxt(std::string file_path, std::vector<std::string> *fields,
 }  // namespace common
 }  // namespace calibrator_pipeline
 #endif  // FILE_OPERATION_HPP_
+

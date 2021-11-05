@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -w -O2 ")
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
+  camera_info_manager
   pcl_ros
   roscpp
   sensor_msgs
@@ -17,15 +18,21 @@ catkin_package(
 #  DEPENDS system_lib
 )
 find_package( Sophus REQUIRED )
+find_package( Eigen3 REQUIRED )
 find_package( OpenCV REQUIRED )
 find_package( apriltag REQUIRED )
-include_directories(
+set( GLOBAL_INCLUDE_DISR
   include
   ./common
   ${catkin_INCLUDE_DIRS}
   ${Sophus_INCLUDE_DIRS}
   /usr/local/include/apriltag/
 )
-add_subdirectory(lib)
+include_directories(
+  ${GLOBAL_INCLUDE_DISR}
+
+)
+add_subdirectory(src)
+add_subdirectory(common)
 
 
