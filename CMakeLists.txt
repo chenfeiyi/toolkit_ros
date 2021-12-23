@@ -19,7 +19,6 @@ catkin_package(
 )
 find_package( Eigen3 REQUIRED )
 find_package( OpenCV REQUIRED )
-find_package( apriltag REQUIRED )
 set( GLOBAL_INCLUDE_DISR
   include
   ./common

@@ -48,3 +48,19 @@ target_link_libraries(pc_recorder
 )
 
 
+# *******************record two point cloud **********************
+add_executable(pc_pc_recorder pc_pc_recorder.cc)
+
+target_link_libraries(pc_pc_recorder
+  ${catkin_LIBRARIES}
+)
+
+# *******************record two point cloud and one image**********************
+add_executable(pc_pc_im_recorder pc_pc_im_recorder.cc)
+
+target_link_libraries(pc_pc_im_recorder
+  ${catkin_LIBRARIES}
+)
+
+
+
