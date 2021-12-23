@@ -15,10 +15,13 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
-#include "file_operation.hpp"
 #include "cmdline.h"
+#include "file_operation.hpp"
 using namespace std;
-
+/**
+ * @brief: play images from files.
+ * And the file name should the sequence number or the timestamp.
+ */
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "img_player");
   ros::NodeHandle nh;
@@ -30,8 +33,7 @@ int main(int argc, char *argv[]) {
 
   ros::Publisher img_pub =
       nh.advertise<sensor_msgs::Image>("/usb_cam/image_raw", 10);
-  std::string img_file_path =
-      "/media/ramlab/hdd1/bags/single_board/shot/img/";
+  std::string img_file_path = "/media/ramlab/hdd1/bags/single_board/shot/img/";
 
   vector<string> img_file_list;
   vector<string> pcd_file_list;
@@ -45,26 +47,25 @@ int main(int argc, char *argv[]) {
   std::cout << "start to play data" << std::endl;
   int i = 0;
   while (ros::ok()) {
-      std::string img_name = img_file_path + img_file_list[i];
-      cv::Mat img = cv::imread(img_name);
-      std::vector<std::string> img_field;
-      calibrator_pipeline::common::SplitString(img_file_list[i],&img_field,'.');
-      img_msg =
-          cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-      img_msg->header.stamp = //ros::Time::now();
-          ros::Time(std::atof((img_field[0] + '.' + img_field[1]).c_str()));
-      img_pub.publish(img_msg);
-      rate.sleep();
-      i++;
-      i = i % img_file_list.size();
-      if (i == 0) std::cout << "Done! All data have been played!" << std::endl;
-      if (i == 0 && !a.get<bool>("loop")) {
-        break;
+    std::string img_name = img_file_path + img_file_list[i];
+    cv::Mat img = cv::imread(img_name);
+    std::vector<std::string> img_field;
+    calibrator_pipeline::common::SplitString(img_file_list[i], &img_field, '.');
+    img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
+    img_msg->header.stamp =  // ros::Time::now();
+        ros::Time(std::atof((img_field[0] + '.' + img_field[1]).c_str()));
+    img_pub.publish(img_msg);
+    rate.sleep();
+    i++;
+    i = i % img_file_list.size();
+    if (i == 0) std::cout << "Done! All data have been played!" << std::endl;
+    if (i == 0 && !a.get<bool>("loop")) {
+      break;
 
-      } else if (i == 0) {
-        std::cout << "******************************" << std::endl;
-        std::cout << "start to replay data" << std::endl;
-      }
+    } else if (i == 0) {
+      std::cout << "******************************" << std::endl;
+      std::cout << "start to replay data" << std::endl;
+    }
   }
   return 0;
 }

@@ -17,7 +17,6 @@ catkin_package(
 #  CATKIN_DEPENDS cv_bridge image_transport pcl_ros roscpp sensor_msgs
 #  DEPENDS system_lib
 )
-find_package( Sophus REQUIRED )
 find_package( Eigen3 REQUIRED )
 find_package( OpenCV REQUIRED )
 find_package( apriltag REQUIRED )
@@ -25,8 +24,6 @@ set( GLOBAL_INCLUDE_DISR
   include
   ./common
   ${catkin_INCLUDE_DIRS}
-  ${Sophus_INCLUDE_DIRS}
-  /usr/local/include/apriltag/
 )
 include_directories(
   ${GLOBAL_INCLUDE_DISR}

@@ -5,23 +5,21 @@
 #include <pcl/conversions.h>
 #include <pcl/point_types.h>
 #include "file_operation.hpp"
+
+/** 
+ * @brief: convert the bin type point cloud into pcd file
+ */
 int main(int argc, char *argv[])
 {
-  ros::init(argc,argv,"kitti_lidar");
-  ros::NodeHandle nh;
-  ros::Publisher lidar_pub = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points",10);
-  std::string lidar_file_path  = "/media/ramlab/hdd3/dataset/kitti/lidar/sequences/13/velodyne/";
+  std::string lidar_file_path  = "/media/ramlab/hdd3/dataset/kitti/lidar/sequences/00/velodyne/";
+  std::string save_path  ="/media/ramlab/hdd3/dataset/kitti/lidar/sequences/00/pcd/";
   // allocate 4 MB buffer (only ~130*4*4 KB are needed)
   int32_t num = 1000000;
   float *data = (float*)malloc(num*sizeof(float));
-
-  // read files from folder
   std::vector<std::string> file_list;
   calibrator_pipeline::common::GetFilelist(lidar_file_path,&file_list,false);
-  ros::Rate rate(10);
   int idx=0;
-  sensor_msgs::PointCloud2 pcd_msg;
-  while(ros::ok()){
+  while(true){
     std::string file_name = lidar_file_path + file_list[idx];
     std::cout<<"file name: "<<file_name<<std::endl;
     pcl::PointCloud<pcl::PointXYZI> point_cloud;
@@ -45,21 +43,16 @@ int main(int argc, char *argv[])
       px+=4; py+=4; pz+=4; pr+=4;
     }
     fclose(stream);
-    pcl::toROSMsg(point_cloud,pcd_msg);
-
     std::vector<std::string> pcd_field;
     calibrator_pipeline::common::SplitString(file_list[idx],&pcd_field,'.');
-    pcd_msg.header.stamp =
-          ros::Time(std::atof((pcd_field[0] + '.' + pcd_field[1]).c_str()));
-    pcd_msg.header.frame_id="velodyne";
-    lidar_pub.publish(pcd_msg);
-
+    point_cloud.height = point_cloud.size();
+    point_cloud.width = 1;
+    pcl::io::savePCDFile(save_path+pcd_field[0]+".pcd",point_cloud);
     idx++;
     if (idx>file_list.size())
     {
       break;
     }
-    rate.sleep();
-  }  
+  }
   return 0;
 }

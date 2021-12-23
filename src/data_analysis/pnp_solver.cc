@@ -3,6 +3,11 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
+/**
+ * @brief: PnP solver to calibrate extrinsic parameters given 2D-3D point and
+ * its correspondence.
+ */
+
 int main(int argc, char const *argv[]) {
   Eigen::Matrix3d K;
   Eigen::Matrix<double, 5, 1> dist;

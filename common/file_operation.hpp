@@ -58,7 +58,11 @@ static void SplitString(std::string str, std::vector<std::string> *fields,
                         char separators, bool verbose = false) {
   std::istringstream sin(str);
   std::string field;
+  std::string sep(1, separators);
   while (std::getline(sin, field, separators)) {
+    if(field.size()<1){
+      continue;
+    }
     fields->push_back(field);
     if (verbose) {
       std::cout << field << "--";
@@ -70,7 +74,7 @@ static void SplitString(std::string str, std::vector<std::string> *fields,
 static void ReadTxt(std::string file_path, std::vector<std::string> *fields,
                     char separator) {
   std::fstream fin;
-  fin.open(file_path.c_str(), std::ios::out);
+  fin.open(file_path.c_str(), std::ios::in);
   if (!fin.is_open()) {
     std::cout << "can't open file " << file_path.c_str() << std::endl;
     return;
@@ -80,6 +84,7 @@ static void ReadTxt(std::string file_path, std::vector<std::string> *fields,
     //  将line一整句string按照分号切割成多个string并存储到fields中vector中;
     SplitString(line, fields, separator);
   }
+  fin.close();
 }
 }  // namespace common
 }  // namespace calibrator_pipeline

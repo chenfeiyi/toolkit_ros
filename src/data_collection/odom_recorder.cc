@@ -9,6 +9,11 @@
 #include <ros/ros.h>
 #include <Eigen/Dense>
 #include <fstream>
+
+/** 
+ * @brief: record poses from ros message and save it to txt files. 
+ */
+
 std::ofstream *file_out;
 void odom_callback(nav_msgs::OdometryConstPtr laserOdometry) {
   Eigen::Quaterniond q_wodom_curr;

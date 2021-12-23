@@ -15,10 +15,13 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
-#include "file_operation.hpp"
 #include "cmdline.h"
+#include "file_operation.hpp"
 using namespace std;
-
+/** 
+ * @brief: play point cloud from files.
+ * And the file name should the sequence number or the timestamp.
+ */
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "lidar_player");
   ros::NodeHandle nh;
@@ -45,31 +48,30 @@ int main(int argc, char *argv[]) {
   std::cout << "start to play data" << std::endl;
   int i = 0;
   while (ros::ok()) {
-      std::string pcd_name = pcd_file_path + pcd_file_list[i];
-      pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_raw(
-          new pcl::PointCloud<pcl::PointXYZI>);
-      pcl::io::loadPCDFile(pcd_name, *cloud_raw);
+    std::string pcd_name = pcd_file_path + pcd_file_list[i];
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_raw(
+        new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::io::loadPCDFile(pcd_name, *cloud_raw);
 
-      pcl::toROSMsg(*cloud_raw, pcd_msg);
+    pcl::toROSMsg(*cloud_raw, pcd_msg);
 
-      std::vector<std::string> pcd_field;
-      calibrator_pipeline::common::SplitString(pcd_file_list[i], &pcd_field,
-                                               '.');
-      pcd_msg.header.frame_id = "velodyne";
-      pcd_msg.header.stamp =
-          ros::Time(std::atof((pcd_field[0] + '.' + pcd_field[1]).c_str()));
-      pcd_pub.publish(pcd_msg);
-      rate.sleep();
-      i++;
-      i = i % pcd_file_list.size();
-      if (i == 0) std::cout << "Done! All data have been played!" << std::endl;
-      if (i == 0 && !a.get<bool>("loop")) {
-        break;
+    std::vector<std::string> pcd_field;
+    calibrator_pipeline::common::SplitString(pcd_file_list[i], &pcd_field, '.');
+    pcd_msg.header.frame_id = "velodyne";
+    pcd_msg.header.stamp =
+        ros::Time(std::atof((pcd_field[0] + '.' + pcd_field[1]).c_str()));
+    pcd_pub.publish(pcd_msg);
+    rate.sleep();
+    i++;
+    i = i % pcd_file_list.size();
+    if (i == 0) std::cout << "Done! All data have been played!" << std::endl;
+    if (i == 0 && !a.get<bool>("loop")) {
+      break;
 
-      } else if (i == 0) {
-        std::cout << "******************************" << std::endl;
-        std::cout << "start to replay data" << std::endl;
-      }
+    } else if (i == 0) {
+      std::cout << "******************************" << std::endl;
+      std::cout << "start to replay data" << std::endl;
+    }
   }
   return 0;
 }

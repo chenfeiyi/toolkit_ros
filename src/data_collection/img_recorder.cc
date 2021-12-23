@@ -18,8 +18,15 @@
 #include <vector>
 
 #include "ros/ros.h"
+
+/** 
+ * @brief: record image from topic message and save it to jpg files
+ */
+
 std::string img_save_path;
-void Imgcallback(sensor_msgs::CompressedImageConstPtr msg) {
+int cnt = 0;
+void Imgcallback(sensor_msgs::ImageConstPtr msg) {
+  cnt++;
   cv_bridge::CvImagePtr cv_image_ptr;
   cv::Mat cv_image;
   cv_image_ptr =
@@ -30,16 +37,19 @@ void Imgcallback(sensor_msgs::CompressedImageConstPtr msg) {
   std::vector<int> compression_params;
   compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);  // 选择jpeg
   compression_params.push_back(100);  // 在这个填入你要的图片质量
+  // if (cnt % 2 == 0) {
+  //   return;
+  // }
   cv::imwrite(file_name, cv_image, compression_params);
   ROS_INFO("save img file!");
 }
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "compress_img_recorder");
+  ros::init(argc, argv, "img_recorder");
   ros::NodeHandle nh;
-  img_save_path = "/media/ramlab/hdd2/raw_data/img/";
+  img_save_path = "/media/ramlab/SolidDisk/zuo/";
   ros::Subscriber img_sub =
-        nh.subscribe<sensor_msgs::CompressedImage>("/stereo/left/image_color/compressed", 10, Imgcallback);
+        nh.subscribe<sensor_msgs::Image>("/usb_cam/image_raw", 10, Imgcallback);
   ros::spin();
   return 0;
 }

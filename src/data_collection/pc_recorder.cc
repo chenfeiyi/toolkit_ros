@@ -18,7 +18,9 @@
 #include "cmdline.h"
 #include "ros/ros.h"
 std::string pcd_save_path;
-
+/** 
+ * @brief: record point cloud from topic message and save it to pcd files
+ */
 void Lidarcallback(sensor_msgs::PointCloud2ConstPtr msg) {
   pcl::PointCloud<pcl::PointXYZI> cloud_in;
   pcl::fromROSMsg(*msg, cloud_in);
@@ -30,7 +32,6 @@ void Lidarcallback(sensor_msgs::PointCloud2ConstPtr msg) {
 }
 int main(int argc, char** argv) {
   pcd_save_path = "";
-  
   cmdline::parser a;
   a.add<std::string>("topic", 't', "topic name", false, "/velodyne_points");
   a.add<std::string>(

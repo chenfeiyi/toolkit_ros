@@ -23,6 +23,13 @@
 #include "cmdline.h"
 using namespace std;
 
+/** 
+ * @brief: play image and point cloud at the same time from files.
+ * It requires that the point cloud and image files form one-to-one correspondence.
+ * And the file name should the sequence number or the timestamp.
+ * What's more it adds camera information manager to meet some needs
+ */
+
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "data_player");
   ros::NodeHandle nh;
