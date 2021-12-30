@@ -32,7 +32,7 @@ using namespace std;
 
 
 /** 
- * @brief: record two point cloud from ros message
+ * @brief: record two point cloud from ros message.
  */
 
 string pcd_save_path1 = "/home/udi/Documents/bbc/tool_ws/src/pcd1/";

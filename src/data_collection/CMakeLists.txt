@@ -62,5 +62,11 @@ target_link_libraries(pc_pc_im_recorder
   ${catkin_LIBRARIES}
 )
 
+# *******************record two point cloud and one image**********************
+add_executable(livox_map_recorder livox_map_recorder.cc)
+
+target_link_libraries(livox_map_recorder
+  ${catkin_LIBRARIES}
+)
 
 
