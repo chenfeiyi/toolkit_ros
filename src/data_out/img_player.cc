@@ -23,17 +23,18 @@ using namespace std;
  * And the file name should the sequence number or the timestamp.
  */
 int main(int argc, char *argv[]) {
-  ros::init(argc, argv, "img_player");
-  ros::NodeHandle nh;
-
+  
   cmdline::parser a;
+  a.add<std::string>("path", 'p', "data path", true);
   a.add<bool>("loop", 'l', "play data repeatly", false, false);
   a.add<float>("hz", 'z', "frequency to paly the data", false, 10);
   a.parse_check(argc, argv);
+  ros::init(argc, argv, "img_player");
+  ros::NodeHandle nh;
 
   ros::Publisher img_pub =
       nh.advertise<sensor_msgs::Image>("/usb_cam/image_raw", 10);
-  std::string img_file_path = "/media/ramlab/hdd1/bags/single_board/shot/img/";
+  std::string img_file_path = a.get<std::string>("path");
 
   vector<string> img_file_list;
   vector<string> pcd_file_list;

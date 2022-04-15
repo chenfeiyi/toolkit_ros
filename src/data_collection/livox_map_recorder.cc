@@ -33,9 +33,7 @@ int main(int argc, char** argv) {
   pcd_save_path = "";
   cmdline::parser a;
   a.add<std::string>("topic", 't', "topic name", false, "/livox/lidar");
-  a.add<std::string>(
-      "path", 'p', "save path", false,
-      "/media/ramlab/SolidDisk/livox_BA_cali/");
+  a.add<std::string>("path", 'p', "save path", true);
   a.parse_check(argc, argv);
   pc_map.clear();
   pcd_save_path = a.get<std::string>("path");

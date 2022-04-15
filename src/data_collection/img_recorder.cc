@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "cmdline.h"
 #include "ros/ros.h"
 
 /** 
@@ -45,11 +46,19 @@ void Imgcallback(sensor_msgs::ImageConstPtr msg) {
 }
 int main(int argc, char *argv[])
 {
+  img_save_path = "";
+  cmdline::parser a;
+  a.add<std::string>("topic", 't', "topic name", false, "/usb_cam/image_raw");
+  a.add<std::string>(
+      "path", 'p', "save path", false,
+      "/media/ramlab/SolidDisk/dataset/targetless/pcd/");
+  a.parse_check(argc, argv);
+  img_save_path = a.get<std::string>("path");
+  std::string img_topic = a.get<std::string>("topic");
   ros::init(argc, argv, "img_recorder");
   ros::NodeHandle nh;
-  img_save_path = "/media/ramlab/SolidDisk/zuo/";
   ros::Subscriber img_sub =
-        nh.subscribe<sensor_msgs::Image>("/usb_cam/image_raw", 10, Imgcallback);
+        nh.subscribe<sensor_msgs::Image>(img_topic, 10, Imgcallback);
   ros::spin();
   return 0;
 }

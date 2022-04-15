@@ -27,14 +27,17 @@ int main(int argc, char *argv[]) {
   ros::NodeHandle nh;
 
   cmdline::parser a;
+  a.add<std::string>("path", 'p', "the folder contains point cloud", true);
+  a.add<std::string>("topic", 't', "cloud topic to publish", false, "/velodyne_points");
   a.add<bool>("loop", 'l', "play data repeatly", false, false);
   a.add<float>("hz", 'z', "frequency to paly the data", false, 10);
   a.parse_check(argc, argv);
 
+  std::string topic  = a.get<std::string>("topic");
+  std::string pcd_file_path  = a.get<std::string>("path");
+
   ros::Publisher pcd_pub =
-      nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points", 10);
-  std::string pcd_file_path =
-      "/media/ramlab/hdd1/bags/targetless/targetless2/pcd/";
+      nh.advertise<sensor_msgs::PointCloud2>(topic, 10);
 
   vector<string> pcd_file_list;
   calibrator_pipeline::common::GetFilelist(pcd_file_path, &pcd_file_list,

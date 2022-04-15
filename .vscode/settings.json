@@ -64,6 +64,12 @@
     "typeindex": "cpp",
     "typeinfo": "cpp",
     "valarray": "cpp",
-    "slist": "cpp"
+    "slist": "cpp",
+    "iterator": "cpp",
+    "map": "cpp",
+    "memory_resource": "cpp",
+    "random": "cpp",
+    "set": "cpp",
+    "string": "cpp"
   }
 }
