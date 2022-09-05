@@ -32,6 +32,12 @@ add_executable(pc_im_recorder pc_im_recorder.cc)
 target_link_libraries(pc_im_recorder
   ${catkin_LIBRARIES}
 )
+# *******************record point cloud and image from ros message**********************
+add_executable(pc_im_synchronizer pc_im_synchronizer.cc)
+
+target_link_libraries(pc_im_synchronizer
+  ${catkin_LIBRARIES}
+)
 
 # *******************record customized point cloud **********************
 add_executable(pc_record_custom pc_record_custom.cc)
