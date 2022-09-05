@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**",
                 "/usr/local/include/**",
                 "/usr/include/**",
-                "/opt/ros/kinetic/include/**"
+                "/opt/ros/melodic/include/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",

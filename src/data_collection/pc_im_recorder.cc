@@ -9,10 +9,6 @@
  * @date:
  */
 #include <cv_bridge/cv_bridge.h>
-#include <message_filters/subscriber.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <message_filters/sync_policies/exact_time.h>
-#include <message_filters/synchronizer.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/Image.h>
@@ -24,20 +20,15 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <dirent.h>
 
+#include "../common/cmdline.h"
 #include "ros/ros.h"
 using namespace sensor_msgs;
-using namespace message_filters;
 using namespace std;
 
-string pcd_save_path =
-    "/home/ramlab/Documents/publication/unifiedCali/data/simu/cam-lidar/"
-    "noise-free/pcd/";
-string img_save_path =
-    "/home/ramlab/Documents/publication/unifiedCali/data/simu/cam-lidar/"
-    "noise-free/img/";
-string img_topic = "/usb_cam/image_raw";
-string pcd_topic = "/velodyne_points";
+string pcd_save_path ="";
+string img_save_path ="";
 
 /** 
  * @brief: record point cloud and images from topic message and save them to pcd and jpg files
@@ -47,36 +38,6 @@ string pcd_topic = "/velodyne_points";
 bool need_sync = false;
 bool save_pcd_flag = false;
 bool save_img_flag = false;
-
-void Syncallback(const PointCloud2ConstPtr& ori_pointcloud,
-                 const ImageConstPtr& ori_image) {
-  pcl::PointCloud<pcl::PointXYZI> pcl_cloud;
-  cv_bridge::CvImagePtr cv_image_ptr;
-  cv::Mat cv_image;
-  cv_image_ptr =
-      cv_bridge::toCvCopy(ori_image, sensor_msgs::image_encodings::BGR8);
-  cv_image = cv_image_ptr->image;
-  pcl::fromROSMsg(*ori_pointcloud, pcl_cloud);
-  std::vector<int> compression_params;
-  compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);  //  选择jpeg
-  compression_params.push_back(100);  //  在这个填入你要的图片质量
-  if (save_pcd_flag) {
-    save_pcd_flag = false;
-    std::cout << "\033[1;32m Syn! \033[0m" << std::endl;
-    std::cout << "syn pointcloud' timestamp : " << ori_pointcloud->header.stamp
-              << std::endl;
-    std::cout << "syn image's timestamp : " << ori_image->header.stamp
-              << std::endl;
-    cv::imwrite(img_save_path + "/" +
-                    std::to_string(ori_image->header.stamp.toSec()) + ".jpg",
-                cv_image, compression_params);
-    pcl::io::savePCDFile(
-        pcd_save_path + "/" +
-            std::to_string(ori_pointcloud->header.stamp.toSec()) + ".pcd",
-        pcl_cloud);
-  }
-}
-
 void Lidarcallback(sensor_msgs::PointCloud2ConstPtr msg) {
   pcl::PointCloud<pcl::PointXYZI> cloud_in;
   pcl::fromROSMsg(*msg, cloud_in);
@@ -121,28 +82,39 @@ void keyaction() {
 int main(int argc, char** argv) {
   ros::init(argc, argv, "oneshot_record");
   ros::NodeHandle nh;
-
-  // ***** Load Parameters ****
-  ROS_WARN("Starting synchronizer...");
-
+  cmdline::parser a;
+  a.add<std::string>("cam_topic", 'c', "camera topic name", false, "/usb_cam/image_raw");
+  a.add<std::string>("lidar_topic", 'l', "lidar topic name", false, "/velodyne_points");
+  a.add<std::string>("path", 'p', "save path", true);
+  a.parse_check(argc, argv);
+  std::string pcd_topic = a.get<std::string>("lidar_topic");
+  std::string img_topic = a.get<std::string>("cam_topic");
+  std::string save_path = a.get<std::string>("path");
+  img_save_path=save_path+"/img/";
+  pcd_save_path=save_path+"/pcd/";
+  DIR *dir;   
+  if ((dir=opendir(save_path.c_str())) == NULL)   
+  { 
+    ROS_WARN("folder not exist!!");
+    return 0;
+  }
+  if ((dir=opendir(img_save_path.c_str())) == NULL)   
+  { 
+    std::string cmdpath ="mkdir -p "+img_save_path;
+    system(cmdpath.c_str());
+  }
+  if ((dir=opendir(pcd_save_path.c_str())) == NULL)   
+  { 
+    std::string cmdpath ="mkdir -p "+pcd_save_path;
+    system(cmdpath.c_str());
+  }
   // 建立需要订阅的消息对应的订阅器
   ros::Subscriber pcd_sub;
   ros::Subscriber img_sub;
-  message_filters::Subscriber<PointCloud2> PCInfo_sub;
-  message_filters::Subscriber<Image> ImageInfo_sub;
-  typedef sync_policies::ApproximateTime<PointCloud2, Image> MySyncPolicy;
-  Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), PCInfo_sub,
-                                  ImageInfo_sub);  // queue size=10
-  sync.registerCallback(boost::bind(&Syncallback, _1, _2));
-  if (need_sync) {
-    PCInfo_sub.subscribe(nh, pcd_topic, 1);
-    ImageInfo_sub.subscribe(nh, img_topic, 1);
-  } else {
-    pcd_sub =
-        nh.subscribe<sensor_msgs::PointCloud2>(pcd_topic, 10, Lidarcallback);
-    img_sub = nh.subscribe<sensor_msgs::Image>(img_topic, 10, Imgcallback);
-  }
-
+  
+  pcd_sub =
+      nh.subscribe<sensor_msgs::PointCloud2>(pcd_topic, 10, Lidarcallback);
+  img_sub = nh.subscribe<sensor_msgs::Image>(img_topic, 10, Imgcallback);
   thread t(keyaction);
   t.detach();
   ros::spin();
