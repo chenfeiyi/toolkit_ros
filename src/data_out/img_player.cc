@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   std::cout << "start to play data" << std::endl;
   int i = 0;
   while (ros::ok()) {
-    std::string img_name = img_file_path + img_file_list[i];
+    std::string img_name = img_file_path + "/"+img_file_list[i];
     cv::Mat img = cv::imread(img_name);
     std::vector<std::string> img_field;
     calibrator_pipeline::common::SplitString(img_file_list[i], &img_field, '.');

@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#include "cmdline.h"
+#include "../common/cmdline.h"
 #include "ros/ros.h"
 
 /** 
@@ -49,9 +49,7 @@ int main(int argc, char *argv[])
   img_save_path = "";
   cmdline::parser a;
   a.add<std::string>("topic", 't', "topic name", false, "/usb_cam/image_raw");
-  a.add<std::string>(
-      "path", 'p', "save path", false,
-      "/media/ramlab/SolidDisk/dataset/targetless/pcd/");
+  a.add<std::string>("path", 'p', "save path", true);
   a.parse_check(argc, argv);
   img_save_path = a.get<std::string>("path");
   std::string img_topic = a.get<std::string>("topic");

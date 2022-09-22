@@ -15,7 +15,7 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
-#include "cmdline.h"
+#include "../common/cmdline.h"
 #include "ros/ros.h"
 std::string pcd_save_path;
 /** 
@@ -35,8 +35,7 @@ int main(int argc, char** argv) {
   cmdline::parser a;
   a.add<std::string>("topic", 't', "topic name", false, "/velodyne_points");
   a.add<std::string>(
-      "path", 'p', "save path", false,
-      "/media/ramlab/SolidDisk/dataset/targetless/pcd/");
+      "path", 'p', "save path", true);
   a.parse_check(argc, argv);
   pcd_save_path = a.get<std::string>("path");
   ros::init(argc, argv, "data_recorder");

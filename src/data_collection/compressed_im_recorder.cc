@@ -16,6 +16,7 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
+#include "../common/cmdline.h"
 
 #include "ros/ros.h"
 /** 
@@ -29,7 +30,7 @@ void Imgcallback(sensor_msgs::CompressedImageConstPtr msg) {
       cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   cv_image = cv_image_ptr->image;
   std::string file_name;
-  file_name = img_save_path + std::to_string(msg->header.stamp.toSec())+".jpg";
+  file_name = img_save_path +"/"+ std::to_string(msg->header.stamp.toSec())+".jpg";
   std::vector<int> compression_params;
   compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);  // 选择jpeg
   compression_params.push_back(100);  // 在这个填入你要的图片质量
@@ -40,9 +41,14 @@ int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "compress_img_recorder");
   ros::NodeHandle nh;
-  img_save_path = "/media/ramlab/hdd2/raw_data/img/";
+  cmdline::parser a;
+  a.add<std::string>("topic", 't', "topic name", false, "/usb_cam/image_raw/compressed");
+  a.add<std::string>("path", 'p', "save path", true);
+  a.parse_check(argc, argv);
+  img_save_path = a.get<std::string>("path");
+  std::string img_topic = a.get<std::string>("topic");
   ros::Subscriber img_sub = nh.subscribe<sensor_msgs::CompressedImage>(
-      "/stereo/left/image_color/compressed", 10, Imgcallback);
+      img_topic, 10, Imgcallback);
   ros::spin();
   return 0;
 }

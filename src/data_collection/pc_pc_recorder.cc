@@ -24,7 +24,7 @@
 #include <string>
 #include <thread>
 #include <vector>
-
+#include "../common/cmdline.h"
 #include "ros/ros.h"
 using namespace sensor_msgs;
 using namespace message_filters;
@@ -35,10 +35,10 @@ using namespace std;
  * @brief: record two point cloud from ros message.
  */
 
-string pcd_save_path1 = "/home/udi/Documents/bbc/tool_ws/src/pcd1/";
-string pcd_save_path2 = "/home/udi/Documents/bbc/tool_ws/src/pcd2/";
-string pcd_topic1 = "/right/rslidar_points";
-string pcd_topic2 = "/left/rslidar_points";
+string pcd_save_path1;
+string pcd_save_path2;
+string pcd_topic1;
+string pcd_topic2;
 
 bool save_pcd_flag = false;
 
@@ -80,9 +80,34 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
 
   // ***** Load Parameters ****
-  ROS_WARN("Starting synchronizer...");
-
+  cmdline::parser a;
+  a.add<std::string>("lidar_topic1", 's', "source lidar topic name", false, "/ns1/velodyne_points");
+  a.add<std::string>("lidar_topic2", 't', "target lidar topic name", false, "/ns2/velodyne_points");
+  a.add<std::string>("path", 'p', "save path", true);
+  a.parse_check(argc, argv);
+  std::string pcd_topic1 = a.get<std::string>("lidar_topic1");
+  std::string pcd_topic2 = a.get<std::string>("lidar_topic2");
+  std::string save_path = a.get<std::string>("path");
+  pcd_save_path1=save_path+"/pcd1";
+  pcd_save_path2=save_path+"/pcd2";
+  DIR *dir;   
+  if ((dir=opendir(save_path.c_str())) == NULL)   
+  { 
+    ROS_WARN("folder not exist!!");
+    return 0;
+  }
+  if ((dir=opendir(pcd_save_path1.c_str())) == NULL)   
+  { 
+    std::string cmdpath ="mkdir -p "+pcd_save_path1;
+    system(cmdpath.c_str());
+  }
+  if ((dir=opendir(pcd_save_path2.c_str())) == NULL)   
+  { 
+    std::string cmdpath ="mkdir -p "+pcd_save_path2;
+    system(cmdpath.c_str());
+  }
   // 建立需要订阅的消息对应的订阅器
+  ROS_WARN("Starting recording...");
   ros::Subscriber pcd_sub1;
   ros::Subscriber pcd_sub2;
   message_filters::Subscriber<PointCloud2> PCInfo_sub1(nh, pcd_topic1, 1);
@@ -93,7 +118,7 @@ int main(int argc, char **argv) {
   Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), PCInfo_sub1,
                                   PCInfo_sub2);  // queue size=10
   sync.registerCallback(boost::bind(&Syncallback, _1, _2));
-
+  
   thread t(keyaction);
   t.detach();
   ros::spin();

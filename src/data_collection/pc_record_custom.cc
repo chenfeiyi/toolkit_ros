@@ -50,8 +50,7 @@ int main(int argc, char** argv) {
 
   cmdline::parser a;
   a.add<std::string>("topic", 't', "topic name", false, "/velodyne_points");
-  a.add<std::string>("path", 'p', "save path", false,
-                     "/media/ramlab/SolidDisk/vel2cam2021/seq/02/pcd2/");
+  a.add<std::string>("path", 'p', "save path", true);
   a.parse_check(argc, argv);
   pcd_save_path = a.get<std::string>("path");
   ros::init(argc, argv, "data_recorder");
