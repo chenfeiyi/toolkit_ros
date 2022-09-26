@@ -74,5 +74,10 @@ add_executable(livox_map_recorder livox_map_recorder.cc)
 target_link_libraries(livox_map_recorder
   ${catkin_LIBRARIES}
 )
+add_executable(livox_map_cam_recorder liv_map_cam_recorder.cc)
+
+target_link_libraries(livox_map_cam_recorder
+  ${catkin_LIBRARIES}
+)
 
 

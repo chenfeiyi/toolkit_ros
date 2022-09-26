@@ -1,3 +1,3 @@
-add_subdirectory(data_out)
+add_subdirectory(data_publish)
 add_subdirectory(data_analysis)
 add_subdirectory(data_collection)

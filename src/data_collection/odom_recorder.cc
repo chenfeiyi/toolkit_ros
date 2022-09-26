@@ -9,7 +9,7 @@
 #include <ros/ros.h>
 #include <Eigen/Dense>
 #include <fstream>
-
+#include "../common/cmdline.h"
 /** 
  * @brief: record poses from ros message and save it to txt files. 
  */
@@ -40,12 +40,17 @@ int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "odom_recorder");
   ros::NodeHandle nh;
-  std::string file_name =
-      "/home/ramlab/Documents/ros_workspace/files/lidar_odom.txt";
+  cmdline::parser a;
+  a.add<std::string>("topic", 't', "topic name", true);
+  a.add<std::string>("path", 'p', "save path", true);
+  std::string file_name = a.get<std::string>("path");
+  std::string odom_topic = a.get<std::string>("topic");
+  std::cout<<"Press ctrl+c to end this recording!!!"<<std::endl;
+  file_name = file_name +"/odom.txt";
   file_out = new std::ofstream;
   file_out->open(file_name, std::ios::out | std::ios::trunc);
   ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>(
-      "/aft_mapped_to_init", 10, odom_callback);
+      odom_topic, 10, odom_callback);
   ros::spin();
   file_out->close();
   std::cout << "save file to " << file_name << std::endl;
